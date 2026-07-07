@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The MINDCROUD Career Spectrum — Scoring Tool</title>
+<style>
+  :root {
+    --surface-1: #fcfcfb;
+    --page: #f9f9f7;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --baseline: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    --mak: #eda100;  /* amber */
+    --exp: #1baf7a;  /* aqua  */
+    --vis: #4a3aa7;  /* violet */
+    --men: #e87ba4;  /* magenta */
+    --pio: #e34948;  /* red */
+    --grd: #2a78d6;  /* blue */
+    --good: #0ca30c;
+    --warning: #fab219;
+    --critical: #d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --surface-1: #1a1a19;
+      --page: #0d0d0d;
+      --ink: #ffffff;
+      --ink-2: #c3c2b7;
+      --muted: #898781;
+      --grid: #2c2c2a;
+      --baseline: #383835;
+      --border: rgba(255,255,255,0.10);
+      --mak: #c98500;
+      --exp: #199e70;
+      --vis: #9085e9;
+      --men: #d55181;
+      --pio: #e66767;
+      --grd: #3987e5;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 24px 16px 80px; }
+  header h1 { font-size: 1.7rem; margin: 0 0 4px; }
+  header p.sub { color: var(--ink-2); margin: 0 0 6px; }
+  .notice {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px; color: var(--ink-2);
+    font-size: .9rem; margin: 16px 0 24px;
+  }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  button {
+    font: inherit; padding: 9px 16px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface-1); color: var(--ink);
+  }
+  button.primary { background: var(--ink); color: var(--page); border-color: var(--ink); font-weight: 600; }
+  .scale-key {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 16px; font-size: .9rem; color: var(--ink-2); margin-bottom: 16px;
+  }
+  ol.items { list-style: none; margin: 0; padding: 0; }
+  ol.items li {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 16px; margin-bottom: 8px;
+    display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between;
+  }
+  ol.items li .stem { flex: 1 1 380px; }
+  ol.items li .stem .qn { color: var(--muted); margin-right: 8px; font-variant-numeric: tabular-nums; }
+  .opts { display: flex; gap: 4px; }
+  .opts label {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 38px; height: 34px; border: 1px solid var(--grid); border-radius: 7px;
+    cursor: pointer; font-size: .9rem; color: var(--ink-2); user-select: none;
+  }
+  .opts input { display: none; }
+  .opts input:checked + span {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 100%; height: 100%; border-radius: 6px;
+    background: var(--ink); color: var(--page); font-weight: 700;
+  }
+  .opts label span { display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+  #progress { position: sticky; top: 0; z-index: 5; background: var(--page); padding: 8px 0; font-size: .85rem; color: var(--ink-2); }
+  #progress .bar { height: 4px; background: var(--grid); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+  #progress .bar i { display: block; height: 100%; background: var(--ink); width: 0; transition: width .2s; }
+  /* Results */
+  #results { margin-top: 32px; scroll-margin-top: 56px; }
+  .card {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; margin-bottom: 16px;
+  }
+  .card h2 { margin: 0 0 12px; font-size: 1.15rem; }
+  .card h3 { margin: 18px 0 6px; font-size: 1rem; }
+  .band-row { display: grid; grid-template-columns: 160px 1fr 110px; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .band-row .name { font-weight: 600; font-size: .95rem; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+  .band-row .name .nm { display: flex; align-items: center; gap: 8px; }
+  .band-row .swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+  .band-row .track { height: 22px; background: transparent; border-radius: 4px; position: relative; }
+  .band-row .track::before { content: ""; position: absolute; inset: 0; border-left: 2px solid var(--baseline); }
+  .band-row .fill { height: 100%; border-radius: 0 4px 4px 0; min-width: 2px; }
+  .band-row .val { font-variant-numeric: tabular-nums; text-align: right; font-size: .9rem; }
+  .band-row .val b { font-size: 1rem; }
+  .badge {
+    display: inline-block; font-size: .7rem; font-weight: 700; letter-spacing: .04em;
+    padding: 1px 7px; border-radius: 99px; border: 1px solid var(--ink); color: var(--ink);
+    text-transform: uppercase;
+  }
+  .flag { border-color: var(--critical); color: var(--critical); }
+  .caution { border-color: var(--warning); color: var(--ink); }
+  .ok { border-color: var(--good); color: var(--good); }
+  .narr { color: var(--ink-2); font-size: .93rem; margin: 4px 0 14px; }
+  table.tbl { width: 100%; border-collapse: collapse; font-size: .88rem; margin-top: 8px; }
+  table.tbl th, table.tbl td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--grid); }
+  table.tbl td.num { font-variant-numeric: tabular-nums; }
+  .tooltip {
+    position: fixed; pointer-events: none; z-index: 20; display: none;
+    background: var(--ink); color: var(--page); font-size: .8rem;
+    padding: 6px 10px; border-radius: 6px; max-width: 260px;
+  }
+  ul.fam { margin: 6px 0 0; padding-left: 18px; color: var(--ink-2); font-size: .93rem; }
+  ul.fam li { margin-bottom: 4px; }
+  .footer-note { color: var(--muted); font-size: .8rem; margin-top: 24px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>The MINDCROUD Career Spectrum</h1>
+    <p class="sub">Scoring &amp; Spectrum Heatmap tool — Version 1.0 (consultant/demo use)</p>
+  </header>
+
+  <div class="notice">
+    <strong>Provisional status.</strong> This assessment is based on the most extensively researched model in career
+    psychology, but this specific questionnaire is newly developed and still gathering scientific evidence. Treat
+    results as a structured starting point for career conversations — not a verdict. This tool is for guidance and
+    development only; it must not be used for hiring or selection.
+  </div>
+
+  <div class="controls">
+    <button id="btn-demo" type="button">Fill example profile</button>
+    <button id="btn-random" type="button">Fill randomly</button>
+    <button id="btn-clear" type="button">Clear all</button>
+    <button id="btn-score" type="button" class="primary">Score my Spectrum</button>
+  </div>
+
+  <div class="scale-key">
+    <strong>1</strong> = Strongly disagree&ensp;·&ensp;<strong>2</strong> = Disagree&ensp;·&ensp;
+    <strong>3</strong> = Neutral&ensp;·&ensp;<strong>4</strong> = Agree&ensp;·&ensp;<strong>5</strong> = Strongly agree
+  </div>
+
+  <div id="progress"><span id="progress-text">0 / 65 answered</span><div class="bar"><i id="progress-fill"></i></div></div>
+
+  <ol class="items" id="items"></ol>
+
+  <div class="controls"><button id="btn-score2" type="button" class="primary">Score my Spectrum</button></div>
+
+  <section id="results" hidden></section>
+
+  <p class="footer-note">The MINDCROUD Career Spectrum™ — original proprietary content. Scoring logic mirrors
+  <code>data/scoring.json</code> and Section 6 of the master document.</p>
+</div>
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+"use strict";
+
+/* ---------- Instrument data (mirrors data/items.json) ---------- */
+const AVATARS = {
+  MAK: { name: "The Maker",    riasec: "Realistic",     color: "var(--mak)" },
+  EXP: { name: "The Explorer", riasec: "Investigative", color: "var(--exp)" },
+  VIS: { name: "The Visionary",riasec: "Artistic",      color: "var(--vis)" },
+  MEN: { name: "The Mentor",   riasec: "Social",        color: "var(--men)" },
+  PIO: { name: "The Pioneer",  riasec: "Enterprising",  color: "var(--pio)" },
+  GRD: { name: "The Guardian", riasec: "Conventional",  color: "var(--grd)" }
+};
+
+const ITEMS = [
+[1,"MEN",0,"I enjoy teaching someone a new skill."],
+[2,"MAK",0,"I enjoy repairing broken objects with my hands."],
+[3,"GRD",0,"I enjoy organizing information into clear systems."],
+[4,"EXP",0,"I enjoy studying information to find out why something happens."],
+[5,"PIO",0,"I enjoy convincing others to support an idea."],
+[6,"VIS",0,"I enjoy creating original work, such as a design, a story, or a piece of music."],
+[7,"MAK",0,"I like using tools or machines to complete a task."],
+[8,"MEN",0,"I like helping people find a way through their problems."],
+[9,"EXP",0,"I like solving problems that require deep thinking."],
+[10,"GRD",0,"I like checking details to make sure everything is correct."],
+[11,"VIS",0,"I like finding new ways to express an idea."],
+[12,"PIO",0,"I like taking the lead when a group needs direction."],
+[13,"EXP",0,"I enjoy reading about science, technology, or new discoveries."],
+[14,"MAK",0,"I enjoy building things I can touch when they are finished."],
+[15,"MEN",0,"Seeing a person grow because of my support makes my work feel meaningful."],
+[16,"GRD",0,"I work best when I have a clear plan and a fixed schedule."],
+[17,"ATT",4,"To show that you are reading each statement, please choose “Agree” for this one."],
+[18,"PIO",0,"Competition brings out my best effort."],
+[19,"VIS",0,"I do my best work in places with freedom and few fixed rules."],
+[20,"MAK",0,"I feel comfortable in a workshop, on a work site, or outdoors."],
+[21,"MEN",1,"I do my best work when I am alone for most of the day."],
+[22,"GRD",0,"Completing a task exactly as planned gives me satisfaction."],
+[23,"EXP",0,"I like work settings where careful analysis matters more than speed."],
+[24,"PIO",1,"I prefer to follow a leader rather than be the leader."],
+[25,"VIS",0,"Making something beautiful gives me energy."],
+[26,"MAK",0,"I like jobs where I can see the physical results of my work at the end of the day."],
+[27,"MEN",0,"I prefer workplaces where people cooperate closely."],
+[28,"EXP",1,"I lose interest when a task requires long, detailed analysis."],
+[29,"GRD",1,"I enjoy jobs where every day is different and unplanned."],
+[30,"PIO",0,"I enjoy work environments where things move quickly."],
+[31,"VIS",1,"I prefer tasks with one correct answer over tasks with many possible answers."],
+[32,"MAK",0,"Working with physical materials gives me energy."],
+[33,"ATT",1,"For this statement, please select “Strongly disagree.”"],
+[34,"MEN",0,"I enjoy listening carefully when someone shares a personal difficulty."],
+[35,"EXP",0,"Understanding how something truly works gives me deep satisfaction."],
+[36,"GRD",0,"I enjoy keeping records accurate and up to date."],
+[37,"PIO",0,"I like being the person who starts a new project."],
+[38,"VIS",0,"I enjoy imagining things that do not exist yet."],
+[39,"MAK",1,"I would rather work with ideas than with physical objects."],
+[40,"MEN",0,"Conversations with people give me energy."],
+[41,"CCA",1,"I like showing another person how to do something new."],
+[42,"EXP",0,"I keep asking questions until I fully understand a topic."],
+[43,"GRD",1,"I would rather improvise than follow a step-by-step plan."],
+[44,"PIO",1,"Trying to persuade people drains my energy."],
+[45,"VIS",1,"I work best when every step of my work is decided in advance."],
+[46,"MAK",0,"I feel proud when I fix something that was not working."],
+[47,"MEN",0,"I like roles where my main task is to support other people's growth."],
+[48,"EXP",0,"I feel energized when I face a complicated problem."],
+[49,"ATT",3,"This is a quality check. Please choose “Neutral” for this statement."],
+[50,"GRD",0,"I prefer a stable job with clear duties over a job that changes all the time."],
+[51,"PIO",0,"Winning an important agreement gives me a strong feeling of excitement."],
+[52,"VIS",0,"I am drawn to work where personal style and taste matter."],
+[53,"MAK",1,"A full day of physical, hands-on work leaves me feeling drained."],
+[54,"MEN",1,"A full day of helping people with personal problems would exhaust me."],
+[55,"EXP",1,"I prefer a quick practical answer over a deep investigation."],
+[56,"CCB",10,"I enjoy reviewing work carefully to find small errors."],
+[57,"GRD",0,"Clear rules and procedures help me feel confident at work."],
+[58,"PIO",1,"I prefer a calm, predictable role over a competitive one."],
+[59,"VIS",0,"I feel full of energy when I am inventing something new."],
+[60,"MAK",0,"I enjoy taking devices apart to learn how they work."],
+[61,"MEN",0,"I enjoy explaining difficult things in a way others can understand."],
+[62,"EXP",0,"I like work that lets me spend a long time investigating a single question."],
+[63,"GRD",1,"Careful, detailed paperwork quickly drains my energy."],
+[64,"PIO",0,"I would enjoy being responsible for the success of a business or a team."],
+[65,"VIS",1,"Work that asks me to create something from nothing drains my energy."]
+];
+// Row format: [q, scaleOrType, flag, text]
+// scaleOrType in AVATARS => scored item; flag 1 = reverse-scored.
+// "ATT" => attention check; flag = correct response.
+// "CCA"/"CCB" => consistency duplicates; flag = q# of paired item.
+
+const BANDS = [
+  { min: 81, label: "Core Resonance" },
+  { min: 61, label: "Strong Resonance" },
+  { min: 41, label: "Moderate Resonance" },
+  { min: 21, label: "Low Resonance" },
+  { min: 0,  label: "Minimal Resonance" }
+];
+
+const NARRATIVES = {
+MAK: {
+"Core Resonance": "The Maker is one of the strongest forces in your Spectrum. You come alive when work is physical and real — when you can pick up a tool, shape a material, and stand back at the end of the day to see what you built or repaired. Careers that keep you close to machines, materials, and tangible outcomes are not just options for you; they are where your energy naturally flows. Protect this: choose work where your hands and your practical judgment are the main event, not a side task.",
+"Strong Resonance": "The Maker runs strongly through you. You trust what you can touch, test, and fix, and you feel a quiet satisfaction when something broken starts working again because of you. You may not need a fully hands-on career, but you do need real, visible results — roles that stay abstract for months will slowly wear you down. Look for work that lets you build, operate, repair, or improve physical things or systems on a regular basis.",
+"Moderate Resonance": "The Maker has a steady, moderate presence in your Spectrum. You can enjoy practical, hands-on tasks, especially when they produce a clear result, but they are not the core of what drives you. In your career, this shows up best as an asset: you are comfortable getting practical when a situation demands it. Let your stronger Avatars set the direction, and treat your Maker side as a dependable skill you can call on.",
+"Low Resonance": "The Maker plays a background role for you. Physical, tool-based work is something you can do when needed, but it rarely gives you energy, and a career built mainly around it would likely leave you unsatisfied. This is useful self-knowledge: when comparing career options, be careful with roles where manual or technical hands-on work is the daily core rather than an occasional task.",
+"Minimal Resonance": "The Maker sits at the quiet edge of your Spectrum. Work centered on tools, machines, and physical materials simply is not where your motivation lives — and that is perfectly fine. Your energy is drawn elsewhere, and the clearest gift of this score is permission: you do not need to force yourself toward practical, hands-on paths to prove anything. Direct your career-building effort toward the Avatars at the top of your Spectrum."
+},
+EXP: {
+"Core Resonance": "The Explorer is one of the strongest forces in your Spectrum. Your mind hunts for the “why” behind things — you are drawn to questions, data, and problems that take real thinking to untangle, and understanding something deeply gives you a satisfaction few other experiences can match. Build your career around investigation: research, analysis, diagnosis, and discovery are not just tasks you tolerate, they are the fuel you run on.",
+"Strong Resonance": "The Explorer runs strongly through you. You are most engaged when work gives you a puzzle worth solving and the time to solve it properly, and you lose patience with tasks that stay on the surface. Your best-fit careers give you regular, protected space for analysis and learning. Be cautious with roles that are all speed and no depth — you will do them well, but they will not feed you.",
+"Moderate Resonance": "The Explorer holds a moderate place in your Spectrum. You enjoy understanding how things work and can dig into a problem when it matters, but endless analysis for its own sake is not your natural home. In practice, this balance serves you well: you can partner with deep specialists without getting lost, and you bring enough curiosity to keep growing. Let your leading Avatars choose the field; your Explorer side will keep you sharp within it.",
+"Low Resonance": "The Explorer plays a supporting role for you. Long stretches of research, data work, or theoretical analysis tend to cost you more energy than they return. You can absolutely master the knowledge your career requires — but choose paths where learning serves action, people, or creation, rather than paths where analysis itself is the product.",
+"Minimal Resonance": "The Explorer rests at the quiet edge of your Spectrum. Careers built on research, abstract analysis, and long solitary investigation are unlikely to bring out your best, and there is real freedom in knowing that. You learn best by doing, connecting, or creating — so look for environments that keep you moving and engaged, and let others own the deep-analysis work."
+},
+VIS: {
+"Core Resonance": "The Visionary is one of the strongest forces in your Spectrum. You carry a constant pull toward creating what does not yet exist — new forms, new ideas, new expressions — and you feel most yourself when your work carries your personal signature. Creative freedom is not a luxury for you; it is a working condition. Choose careers that pay you to imagine, design, and originate, and be wary of roles that would standardize you.",
+"Strong Resonance": "The Visionary runs strongly through you. Original ideas come naturally, you care about how things look and feel, and rigid procedures make you restless. You do not necessarily need the title of “artist” — but you do need room to shape your own approach and put something new into the world regularly. Seek work where creativity is expected of you, not merely permitted.",
+"Moderate Resonance": "The Visionary holds a moderate place in your Spectrum. You appreciate originality and enjoy adding creative touches to your work, yet you do not need constant open-ended invention to feel satisfied. This is a flexible position: you can bring fresh thinking into structured fields, which many teams deeply need. Let your stronger Avatars pick the arena, and use your creative side to stand out within it.",
+"Low Resonance": "The Visionary plays a background role for you. Fully open-ended creative work — starting from a blank page with no guide — tends to drain rather than inspire you. You likely do your best work when goals and methods have some definition. When exploring careers, favor roles with clear purpose and structure, and enjoy creativity as an occasional ingredient rather than the main dish.",
+"Minimal Resonance": "The Visionary sits at the quiet edge of your Spectrum. Careers that demand constant invention and self-expression are not where your strength or your joy lives, and recognizing this is a genuine advantage. You bring value through other channels — steadiness, analysis, care, action, or leadership — and the world needs those at least as much as it needs new ideas."
+},
+MEN: {
+"Core Resonance": "The Mentor is one of the strongest forces in your Spectrum. People are your medium: you feel most alive when you are teaching, guiding, supporting, or helping someone move forward, and another person's growth genuinely feels like your success. Build your career around human development — the daily substance of your work should be people, not paper. Roles that isolate you from others will starve the very thing that powers you.",
+"Strong Resonance": "The Mentor runs strongly through you. You listen well, you explain well, and you are drawn to workplaces where cooperation is real rather than a slogan. You may not need a purely helping profession, but you do need regular, meaningful human contact and a sense that someone is better off because of you. When comparing options, weigh the human dimension of each role as heavily as the technical one.",
+"Moderate Resonance": "The Mentor holds a moderate place in your Spectrum. You care about people and can support, teach, or collaborate effectively, but you also need substance beyond the relationship itself — a craft, a problem, or a goal. This balance is valuable: you can work closely with others without burning out on their needs. Look for roles where helping is woven into the work rather than being the entire work.",
+"Low Resonance": "The Mentor plays a supporting role for you. Extended emotional labor — days filled with other people's problems — costs you more energy than it returns. You can be a good colleague and a fair teammate, but careers whose core product is care, teaching, or counseling would likely wear you down. Choose paths where your contribution flows through tasks, ideas, or results, with human interaction in balanced doses.",
+"Minimal Resonance": "The Mentor rests at the quiet edge of your Spectrum. Work that consists mainly of nurturing, counseling, or continuous close collaboration does not draw your energy — you contribute best through what you make, solve, organize, or lead. This is not coldness; it is clarity. Honor it by choosing environments that respect focused, independent contribution."
+},
+PIO: {
+"Core Resonance": "The Pioneer is one of the strongest forces in your Spectrum. You are built to initiate: to persuade, to lead, to compete, and to turn ambitions into ventures. Influence and momentum give you energy that quieter work never will, and you would rather carry responsibility for results than wait for instructions. Build a career with a scoreboard and a steering wheel — leadership, entrepreneurship, and high-agency roles are your natural territory.",
+"Strong Resonance": "The Pioneer runs strongly through you. You step up when a group needs direction, you enjoy winning people over, and slow-moving environments test your patience. You do not need to own the company, but you do need autonomy, visible goals, and room to grow your influence. Favor roles where initiative is rewarded quickly — and be honest with yourself about how much bureaucracy you can tolerate.",
+"Moderate Resonance": "The Pioneer holds a moderate place in your Spectrum. You can lead, persuade, and push when the situation calls for it, but constant competition and self-promotion are not what you are seeking from work. This measured drive is an asset: you can take initiative without needing the spotlight. Let your stronger Avatars define the substance of your career, and let your Pioneer side open doors and advance it.",
+"Low Resonance": "The Pioneer plays a background role for you. Selling, competing, and jockeying for influence tend to drain you, and careers where advancement depends mainly on constant self-promotion would sit uncomfortably. You do your best work when you can focus on the work itself. Seek cultures that reward contribution and reliability rather than only visibility.",
+"Minimal Resonance": "The Pioneer rests at the quiet edge of your Spectrum. High-pressure persuasion, aggressive competition, and the constant hustle of venture-building are not your source of energy — and stepping off that track is a decision, not a defeat. Depth, craft, care, and consistency are equally powerful ways to build a rewarding career. Choose environments that value them."
+},
+GRD: {
+"Core Resonance": "The Guardian is one of the strongest forces in your Spectrum. You bring order to the world: clear systems, accurate records, dependable processes, and plans that actually hold. Precision is not tedium for you — it is satisfaction, and organizations quite literally run on people with your pattern. Build your career where structure, accuracy, and reliability are mission-critical, and where your care for detail is treated as the professional strength it is.",
+"Strong Resonance": "The Guardian runs strongly through you. You work best with a clear plan, defined responsibilities, and standards you can trust, and you take real pride in work that is complete and correct. Constant chaos and shifting goalposts cost you energy that stable, well-run environments give back. Favor organizations with mature processes — or roles where you are the one who builds that maturity.",
+"Moderate Resonance": "The Guardian holds a moderate place in your Spectrum. You value order and can happily work within systems, yet you do not need everything planned to feel comfortable. This flexibility is worth money in the real world: you can keep quality high without being rigid. Whatever direction your leading Avatars point, your Guardian side will make your work trustworthy — a reputation that compounds over an entire career.",
+"Low Resonance": "The Guardian plays a background role for you. Detailed administration, strict procedures, and highly repetitive structure tend to dull your energy rather than focus it. You can hold the line on quality when it matters, but a career centered on records, compliance, and routine would likely feel confining. Look for roles that offer variety and movement, with structure as a support rather than the substance.",
+"Minimal Resonance": "The Guardian sits at the quiet edge of your Spectrum. Highly structured, detail-heavy, routine-driven work is where your motivation runs thinnest, and pretending otherwise helps no one. You thrive on change, ideas, people, or action — so choose settings that move, and where possible, partner with detail-strong colleagues or systems that cover what you would rather not carry alone."
+}
+};
+
+const COMBOS = {
+"MAK+EXP": { name: "The Diagnostician",
+  profile: "You combine a hands-on instinct with an analytical mind: you want to touch the machine and understand exactly why it behaves the way it does. You are at your best where physical systems meet hard problems — testing, diagnosing, improving, and making things work measurably better.",
+  families: [
+    ["Architecture & Engineering (incl. engineering technology)", "Engineering environments reward applied analysis performed on real physical systems with testable results."],
+    ["Installation, Maintenance & Repair (diagnostic trades)", "Advanced repair work is applied troubleshooting — investigation with tools in hand."],
+    ["Life, Physical & Science Technician roles", "Laboratory and field technician work pairs procedures and instruments with genuine scientific questions."]] },
+"MAK+VIS": { name: "The Artisan",
+  profile: "You want to make things — and you want the things you make to carry beauty, originality, and your personal signature. Mass production bores you; your satisfaction comes from skilled hands executing an original idea.",
+  families: [
+    ["Production (craft and precision occupations)", "Craft trades reward manual mastery in service of aesthetic quality."],
+    ["Food Preparation & Culinary Arts", "Professional cooking is a physical craft judged on creativity and taste."],
+    ["Arts, Design, Entertainment & Media (technical/fabrication)", "Set building, sound and camera work, and prototyping put hands-on skill inside creative production."]] },
+"MAK+MEN": { name: "The Responder",
+  profile: "You help people through action, not just words: when someone needs support, your instinct is to show up and physically do something about it. You are energized by service with your sleeves rolled up — practical care with a human face.",
+  families: [
+    ["Protective Service", "Emergency response and public safety combine physical capability with direct service to people in need."],
+    ["Healthcare Support", "Hands-on patient care is literally helping with your hands."],
+    ["Personal Care, Fitness & Recreation Services", "Coaching and activity instruction develop people through physical practice rather than at a desk."]] },
+"MAK+PIO": { name: "The Groundbreaker",
+  profile: "You want to build real things and run the show: practical competence plus the ambition to own outcomes, win work, and lead crews. You respect results you can stand on, and you would rather be responsible for the whole job than a small piece of it.",
+  families: [
+    ["Construction & Extraction (supervisory/contracting)", "Site leadership and contracting reward people who can both do the work and drive the business."],
+    ["Management (construction, agricultural, operations)", "Managing physical operations keeps leadership anchored in the tangible world."],
+    ["Installation, Maintenance & Repair (service-business ownership)", "Trade-based businesses convert hands-on mastery into an enterprise you lead and grow."]] },
+"MAK+GRD": { name: "The Steady Hand",
+  profile: "You are the person who does precise physical work correctly, every time: tools plus standards, skill plus discipline. You take pride in output that passes inspection — and organizations depend on exactly that reliability.",
+  families: [
+    ["Production (skilled machine operation and quality control)", "Machining, operation, and inspection reward precise hands and respect for specifications."],
+    ["Transportation & Material Moving", "Professional driving and logistics pair physical work with schedules, regulations, and procedures."],
+    ["Construction & Extraction (code-governed trades)", "Trades such as electrical and plumbing work are hands-on crafts executed inside strict codes."]] },
+"EXP+VIS": { name: "The Idea Architect",
+  profile: "You live where analysis meets imagination: you want to understand deeply and express what you find in original form. You are drawn to questions without ready answers and to work that produces new understanding, new designs, or new interpretations.",
+  families: [
+    ["Life, Physical & Social Science (research)", "Research on people, culture, and behavior rewards rigorous inquiry with interpretive creativity."],
+    ["Architecture & Engineering (architecture, design-led engineering)", "Architecture is the canonical fusion of analytical constraint and creative form."],
+    ["Arts, Design, Entertainment & Media (research-driven design/content)", "UX research, information design, and science communication turn investigation into crafted expression."]] },
+"EXP+MEN": { name: "The Healer",
+  profile: "You combine a scientific mind with genuine care for people: you want to understand what is wrong and use that understanding to help someone specific. Diagnosis in service of a human being is your natural work.",
+  families: [
+    ["Healthcare Practitioners & Technical (diagnosing/treating)", "Medicine, nursing, and allied clinical fields are science applied through a helping relationship."],
+    ["Community & Social Service (clinical and counseling)", "Psychology and behavioral health pair investigative depth with one-on-one human development."],
+    ["Educational Instruction (science, health, postsecondary)", "Teaching complex subjects rewards deep understanding delivered through patient human connection."]] },
+"EXP+PIO": { name: "The Strategist",
+  profile: "You analyze to win: data, markets, and evidence are your raw material, and decisive action is your product. You are most alive when rigorous thinking gives you a competitive edge and the authority to act on it.",
+  families: [
+    ["Business & Financial Operations (analysis and strategy)", "Market research, economics, and management analysis pay for investigation that drives commercial decisions."],
+    ["Management (technology, science, systems)", "Leading technical teams and ventures needs someone fluent in the analysis and hungry for the outcome."],
+    ["Legal", "Legal work is investigative reasoning deployed in an adversarial, persuasive arena."]] },
+"EXP+GRD": { name: "The Analyst",
+  profile: "You bring deep thinking and impeccable order together: you want problems that require real intelligence and solutions that are exact, documented, and verifiable. Precision is not a constraint on your curiosity — it is how your curiosity works.",
+  families: [
+    ["Computer & Mathematical", "Software, data science, statistics, and security reward systematic minds that love structured problem-solving."],
+    ["Business & Financial Operations (quantitative)", "Actuarial, audit, and financial analysis pair investigation with standards, controls, and accuracy."],
+    ["Healthcare Practitioners & Technical (laboratory/diagnostic sciences)", "Laboratory science is rigorous investigation executed through exact protocols."]] },
+"VIS+MEN": { name: "The Inspirer",
+  profile: "You create in order to connect: expression, for you, is a way of reaching, teaching, and moving people. You are drawn to work where imagination and empathy amplify each other — where something you made helps someone grow.",
+  families: [
+    ["Educational Instruction & Library (arts, language, enrichment teaching)", "Teaching creative and expressive subjects lets you develop people through the work you love."],
+    ["Community & Social Service (expressive/developmental programs)", "Art, music, and recreational therapy use creativity as a direct instrument of care."],
+    ["Arts, Design, Entertainment & Media (communication for human impact)", "Writing, translation, and content aimed at educating and inspiring serve both Avatars at once."]] },
+"VIS+PIO": { name: "The Creative Director",
+  profile: "You have ideas and the drive to sell them: originality plus persuasion, taste plus ambition. You want your creative work to reach the market, win the pitch, and carry your name — and you are willing to lead to make that happen.",
+  families: [
+    ["Arts, Design, Entertainment & Media (direction and production)", "Art direction and producing reward people who can generate the vision and drive it to delivery."],
+    ["Management (advertising, marketing, brand)", "Marketing and brand management are commercial arenas whose currency is creative ideas."],
+    ["Sales & Related (creative and client-facing services)", "Selling design, media, and experiences lets persuasion and aesthetic judgment work as one skill."]] },
+"VIS+GRD": { name: "The Curator",
+  profile: "You pair creative sensibility with a love of order — a rarer blend that makes you the person who gives beautiful things structure and structured things beauty. You polish, refine, organize, and perfect until the work is both correct and elegant.",
+  families: [
+    ["Arts, Design, Entertainment & Media (editing and production craft)", "Editing, post-production, and publication work reward exacting standards applied to creative material."],
+    ["Educational Instruction & Library (archives, collections, curation)", "Archival work preserves creative and cultural material through meticulous systems."],
+    ["Business & Communication Support (technical writing, documentation)", "Documentation design turns complex material into clear, well-crafted, standardized form."]] },
+"MEN+PIO": { name: "The Motivator",
+  profile: "People follow you because you genuinely care and visibly lead: warmth with momentum. You are built for roles where developing people and driving results are the same job — rallying, coaching, organizing, and advocating.",
+  families: [
+    ["Management (people-centered: HR, education, health, community)", "These management tracks are leadership whose product is human growth and well-being."],
+    ["Business & Financial Operations (training, development, HR)", "Learning and talent development professionalize influence used to build people."],
+    ["Community & Social Service (program leadership and advocacy)", "Running programs, fundraising, and advocacy require a persuasive voice in service of others."]] },
+"MEN+GRD": { name: "The Anchor",
+  profile: "You care for people through reliability: being the steady, organized presence others can count on. Your help is practical and consistent — records kept, appointments honored, details handled — and people feel safer because you are there.",
+  families: [
+    ["Healthcare Support (clinical assisting and coordination)", "Assisting and patient coordination combine caring contact with procedures and accurate records."],
+    ["Educational Instruction & Library (instructional support)", "Teaching assistance pairs daily service to students with structured routines."],
+    ["Office & Administrative Support (people-facing coordination)", "Client services and program administration reward warm, dependable, well-organized professionals."]] },
+"PIO+GRD": { name: "The Executive",
+  profile: "You drive ambitious goals through disciplined systems: you want to win, and you know that winning at scale requires order, numbers, and follow-through. You are the builder of well-run commercial machines.",
+  families: [
+    ["Management (general, financial, administrative)", "Classic management careers reward exactly this combination of goal-drive and operational control."],
+    ["Sales & Related (structured, high-professionalism sales)", "Financial services, insurance, and technical sales pair persuasion with process and documentation."],
+    ["Business & Financial Operations (finance, purchasing, operations)", "Finance and operations roles convert ambition into systems, budgets, and measurable performance."]] }
+};
+
+/* ---------- Render form ---------- */
+const listEl = document.getElementById("items");
+const ANCHOR_TITLES = ["Strongly disagree","Disagree","Neutral","Agree","Strongly agree"];
+listEl.innerHTML = ITEMS.map(([q,,,text]) => `
+  <li>
+    <div class="stem"><span class="qn">${q}.</span>${text}</div>
+    <div class="opts" role="radiogroup" aria-label="Question ${q}">
+      ${[1,2,3,4,5].map(v =>
+        `<label title="${ANCHOR_TITLES[v-1]}"><input type="radio" name="q${q}" value="${v}"><span>${v}</span></label>`).join("")}
+    </div>
+  </li>`).join("");
+
+function getResponses() {
+  const r = {};
+  ITEMS.forEach(([q]) => {
+    const sel = document.querySelector(`input[name="q${q}"]:checked`);
+    if (sel) r[q] = Number(sel.value);
+  });
+  return r;
+}
+function setResponse(q, v) {
+  const el = document.querySelector(`input[name="q${q}"][value="${v}"]`);
+  if (el) { el.checked = true; }
+}
+function updateProgress() {
+  const n = Object.keys(getResponses()).length;
+  document.getElementById("progress-text").textContent = `${n} / ${ITEMS.length} answered`;
+  document.getElementById("progress-fill").style.width = (n / ITEMS.length * 100) + "%";
+}
+listEl.addEventListener("change", updateProgress);
+
+/* ---------- Demo fills ---------- */
+document.getElementById("btn-clear").onclick = () => {
+  document.querySelectorAll("#items input:checked").forEach(i => i.checked = false);
+  document.getElementById("results").hidden = true;
+  updateProgress();
+};
+document.getElementById("btn-random").onclick = () => {
+  ITEMS.forEach(([q]) => setResponse(q, 1 + Math.floor(Math.random() * 5)));
+  updateProgress();
+};
+document.getElementById("btn-demo").onclick = () => {
+  // Example: Mentor + Explorer dominant, Visionary close third (Section 6.8 style)
+  const lean = { MEN: [4,5], EXP: [4,4], VIS: [5,3], PIO: [3,3], MAK: [2,2], GRD: [2,1] };
+  ITEMS.forEach(([q, scale, flag]) => {
+    if (scale === "ATT") { setResponse(q, flag); return; }
+    if (scale === "CCA") { setResponse(q, 5); return; }
+    if (scale === "CCB") { setResponse(q, 2); return; }
+    const [a, b] = lean[scale];
+    let v = (q % 2 === 0) ? a : b;
+    if (flag === 1) v = 6 - v; // answer reversed items in the consistent direction
+    setResponse(q, v);
+  });
+  // keep consistency pairs aligned with their partners
+  setResponse(41, document.querySelector('input[name="q1"]:checked').value);
+  setResponse(56, document.querySelector('input[name="q10"]:checked').value);
+  updateProgress();
+};
+
+/* ---------- Scoring (mirrors Section 6 / data/scoring.json) ---------- */
+function score() {
+  const r = getResponses();
+  const missing = ITEMS.filter(([q]) => !(q in r)).map(([q]) => q);
+  if (missing.length) {
+    alert("Please answer every statement. Missing: " + missing.join(", "));
+    const el = document.querySelector(`input[name="q${missing[0]}"]`);
+    if (el) el.closest("li").scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+
+  const raw = { MAK:0, EXP:0, VIS:0, MEN:0, PIO:0, GRD:0 };
+  ITEMS.forEach(([q, scale, flag]) => {
+    if (!(scale in raw)) return;
+    raw[scale] += flag === 1 ? (6 - r[q]) : r[q];
+  });
+
+  const spectrum = {};
+  for (const k in raw) spectrum[k] = Math.round(((raw[k] - 10) / 40) * 100 + 1e-9);
+
+  const ranked = Object.keys(spectrum).sort((a, b) => spectrum[b] - spectrum[a]);
+  const dominant = [ranked[0], ranked[1]];
+  if (spectrum[ranked[1]] - spectrum[ranked[2]] <= 10) dominant.push(ranked[2]);
+
+  const diff = spectrum[ranked[0]] - spectrum[ranked[5]];
+  const flat = diff < 15;
+
+  // Validity
+  const attFails = [[17,4],[33,1],[49,3]].filter(([q, c]) => r[q] !== c).length;
+  const dA = Math.abs(r[1] - r[41]);
+  const dB = Math.abs(r[10] - r[56]);
+  const inconsistent = (dA >= 3 || dB >= 3) || (dA >= 2 && dB >= 2);
+  let verdict, verdictClass;
+  if (attFails >= 2 || inconsistent) { verdict = "Potentially invalid"; verdictClass = "flag"; }
+  else if (attFails === 1 || dA === 2 || dB === 2) { verdict = "Interpret with caution"; verdictClass = "caution"; }
+  else { verdict = "Valid"; verdictClass = "ok"; }
+
+  render({ raw, spectrum, ranked, dominant, diff, flat, attFails, dA, dB, verdict, verdictClass });
+}
+document.getElementById("btn-score").onclick = score;
+document.getElementById("btn-score2").onclick = score;
+
+function bandOf(s) { return BANDS.find(b => s >= b.min).label; }
+function fillOpacity(s) { return (25 + 75 * (s / 100)) / 100; } // deep at 80-100, fading to light at 0-20
+
+function render(res) {
+  const { raw, spectrum, ranked, dominant, diff, flat, attFails, dA, dB, verdict, verdictClass } = res;
+  const out = document.getElementById("results");
+
+  const heat = ranked.map(k => {
+    const s = spectrum[k], a = AVATARS[k];
+    const dom = dominant.includes(k);
+    return `<div class="band-row" data-tip="${a.name} — ${s}/100 · ${bandOf(s)} · raw ${raw[k]}/50">
+      <div class="name"><span class="nm"><span class="swatch" style="background:${a.color}"></span>${a.name}</span>${dom ? '<span class="badge">Dominant</span>' : ""}</div>
+      <div class="track"><div class="fill" style="width:${s}%;background:${a.color};opacity:${fillOpacity(s)}"></div></div>
+      <div class="val"><b>${s}</b> · ${bandOf(s).replace(" Resonance","")}</div>
+    </div>`;
+  }).join("");
+
+  const pairKey = [dominant[0], dominant[1]].sort().join("+");
+  const combo = COMBOS[pairKey];
+  const third = dominant[2];
+
+  const narratives = ranked.map(k => {
+    const a = AVATARS[k], band = bandOf(spectrum[k]);
+    return `<h3><span class="swatch" style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${a.color};margin-right:6px"></span>${a.name} — ${band} (${spectrum[k]})</h3><p class="narr">${NARRATIVES[k][band]}</p>`;
+  }).join("");
+
+  const tableRows = ranked.map(k =>
+    `<tr><td>${AVATARS[k].name}</td><td>${AVATARS[k].riasec}</td><td class="num">${raw[k]}</td><td class="num">${spectrum[k]}</td><td>${bandOf(spectrum[k])}</td><td>${dominant.includes(k) ? "Yes" : "—"}</td></tr>`).join("");
+
+  out.innerHTML = `
+    <div class="card">
+      <h2>Your Spectrum Heatmap</h2>
+      ${heat}
+      ${flat ? `<p class="narr"><span class="badge flag">Flat profile</span> Your scores are close together across all six Avatars
+        (Differentiation Index ${diff}, under 15). This usually means your interests are still forming, are genuinely broad,
+        or that it was hard to choose between answers. It is not a problem — it is a signal that deeper exploration
+        (trying activities, structured experiments, or a guided interview with a consultant) will serve you better than
+        committing to one direction right away.</p>`
+        : `<p class="narr">Differentiation Index: <strong>${diff}</strong> (${diff >= 30 ? "well-differentiated" : "moderately differentiated"}).</p>`}
+    </div>
+
+    <div class="card">
+      <h2>Validity check <span class="badge ${verdictClass}">${verdict}</span></h2>
+      <p class="narr">Attention checks failed: ${attFails} of 3. Consistency pair differences: A = ${dA}, B = ${dB}.
+      ${verdict === "Potentially invalid" ? "Do not deliver this report automatically — review with a consultant or re-administer." :
+        verdict === "Interpret with caution" ? "Score the profile, but verify engagement during debrief." :
+        "No signals of careless or inconsistent responding."}</p>
+    </div>
+
+    ${combo ? `<div class="card">
+      <h2>Your Dominant combination: ${combo.name}</h2>
+      <p class="narr"><strong>${AVATARS[dominant[0]].name} + ${AVATARS[dominant[1]].name}</strong>${third ? ` · flavored by <strong>${AVATARS[third].name}</strong>` : ""}</p>
+      <p class="narr">${combo.profile}</p>
+      <h3>Best-fit career families</h3>
+      <ul class="fam">${combo.families.map(([f, why]) => `<li><strong>${f}.</strong> ${why}</li>`).join("")}</ul>
+      ${third ? `<p class="narr"><strong>Your third Avatar, ${AVATARS[third].name},</strong> acts as a tiebreaker and flavor:
+        within the families above, prefer roles whose daily texture also feeds your ${AVATARS[third].name.replace("The ","")} side.
+        Your top Avatar is the engine, the second is the compass, and the third is the flavor.</p>` : ""}
+      <p class="narr">Career families are broad occupational territories aligned with O*NET job families — use them with a
+      consultant to drill into specific occupations that also match your education, values, and market.</p>
+    </div>` : ""}
+
+    <div class="card">
+      <h2>What each Avatar means for you</h2>
+      ${narratives}
+    </div>
+
+    <div class="card">
+      <h2>Score table</h2>
+      <table class="tbl">
+        <thead><tr><th>Career Avatar</th><th>RIASEC</th><th>Raw (10–50)</th><th>Spectrum (0–100)</th><th>Band</th><th>Dominant</th></tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+      <p class="narr" style="margin-top:10px">Your Career Spectrum shows where fulfilling work is <em>most likely</em> for you —
+      it raises your odds, it does not decide your future. Treat these results as a well-lit starting point for exploration,
+      not as a verdict on what you can or cannot do.</p>
+    </div>`;
+  out.hidden = false;
+  out.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  // hover tooltips on heatmap rows
+  const tip = document.getElementById("tooltip");
+  out.querySelectorAll(".band-row").forEach(row => {
+    row.addEventListener("mousemove", e => {
+      tip.textContent = row.dataset.tip;
+      tip.style.display = "block";
+      tip.style.left = Math.min(e.clientX + 14, window.innerWidth - 280) + "px";
+      tip.style.top = (e.clientY + 14) + "px";
+    });
+    row.addEventListener("mouseleave", () => { tip.style.display = "none"; });
+  });
+}
+updateProgress();
+</script>
+</body>
+</html>

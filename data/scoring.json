@@ -1,0 +1,88 @@
+{
+  "instrument": "The MINDCROUD Career Spectrum",
+  "version": "1.0",
+  "responseCoding": {
+    "positive": { "1": 1, "2": 2, "3": 3, "4": 4, "5": 5 },
+    "reverse": { "1": 5, "2": 4, "3": 3, "4": 2, "5": 1 },
+    "reverseFormula": "coded = 6 - raw"
+  },
+  "reverseScoredItems": [21, 24, 28, 29, 31, 39, 43, 44, 45, 53, 54, 55, 58, 63, 65],
+  "scales": {
+    "MAK": [2, 7, 14, 20, 26, 32, 39, 46, 53, 60],
+    "EXP": [4, 9, 13, 23, 28, 35, 42, 48, 55, 62],
+    "VIS": [6, 11, 19, 25, 31, 38, 45, 52, 59, 65],
+    "MEN": [1, 8, 15, 21, 27, 34, 40, 47, 54, 61],
+    "PIO": [5, 12, 18, 24, 30, 37, 44, 51, 58, 64],
+    "GRD": [3, 10, 16, 22, 29, 36, 43, 50, 57, 63]
+  },
+  "rawScoreRange": { "min": 10, "max": 50 },
+  "spectrumScore": {
+    "formula": "round(((raw - 10) / 40) * 100)",
+    "rounding": "half-up",
+    "range": { "min": 0, "max": 100 }
+  },
+  "dominantAvatarRule": {
+    "alwaysDominant": "top 2 ranked Spectrum Scores",
+    "thirdDominantIf": "score2 - score3 <= 10",
+    "maxDominant": 3
+  },
+  "differentiationIndex": {
+    "formula": "max(spectrumScores) - min(spectrumScores)",
+    "bands": [
+      { "min": 30, "label": "Well-differentiated" },
+      { "min": 15, "max": 29, "label": "Moderately differentiated" },
+      { "max": 14, "label": "Flat profile (flag)", "flag": "flat-profile" }
+    ]
+  },
+  "scoreBands": [
+    { "min": 81, "max": 100, "label": "Core Resonance" },
+    { "min": 61, "max": 80, "label": "Strong Resonance" },
+    { "min": 41, "max": 60, "label": "Moderate Resonance" },
+    { "min": 21, "max": 40, "label": "Low Resonance" },
+    { "min": 0, "max": 20, "label": "Minimal Resonance" }
+  ],
+  "validity": {
+    "attentionChecks": [
+      { "q": 17, "correctResponse": 4 },
+      { "q": 33, "correctResponse": 1 },
+      { "q": 49, "correctResponse": 3 }
+    ],
+    "attentionRule": { "0": "pass", "1": "caution", "2+": "potentially-invalid" },
+    "consistencyPairs": [
+      { "pair": "A", "items": [1, 41] },
+      { "pair": "B", "items": [10, 56] }
+    ],
+    "consistencyRule": {
+      "consistent": "absolute difference 0-1 on a pair",
+      "mild": "absolute difference 2 on a pair",
+      "strong": "absolute difference 3-4 on a pair",
+      "invalidIf": "any pair difference >= 3, OR both pairs difference >= 2"
+    },
+    "recommendedAutomatedScreens": {
+      "minCompletionSeconds": 180,
+      "longStringFlag": 12
+    },
+    "verdicts": {
+      "valid": "no flags",
+      "interpretWithCaution": "exactly one caution-level signal",
+      "potentiallyInvalid": "any invalid-level signal, or two or more caution-level signals"
+    }
+  },
+  "combinations": {
+    "MAK+EXP": { "name": "The Diagnostician", "riasec": "RI", "careerFamilies": ["Architecture & Engineering (incl. engineering technology)", "Installation, Maintenance & Repair (diagnostic trades)", "Life, Physical & Science Technician roles"] },
+    "MAK+VIS": { "name": "The Artisan", "riasec": "RA", "careerFamilies": ["Production (craft and precision occupations)", "Food Preparation & Culinary Arts", "Arts, Design, Entertainment & Media (technical/fabrication)"] },
+    "MAK+MEN": { "name": "The Responder", "riasec": "RS", "careerFamilies": ["Protective Service", "Healthcare Support", "Personal Care, Fitness & Recreation Services"] },
+    "MAK+PIO": { "name": "The Groundbreaker", "riasec": "RE", "careerFamilies": ["Construction & Extraction (supervisory/contracting)", "Management (construction, agricultural, operations)", "Installation, Maintenance & Repair (service-business ownership)"] },
+    "MAK+GRD": { "name": "The Steady Hand", "riasec": "RC", "careerFamilies": ["Production (skilled machine operation and quality control)", "Transportation & Material Moving", "Construction & Extraction (code-governed trades)"] },
+    "EXP+VIS": { "name": "The Idea Architect", "riasec": "IA", "careerFamilies": ["Life, Physical & Social Science (research)", "Architecture & Engineering (architecture, design-led engineering)", "Arts, Design, Entertainment & Media (research-driven design/content)"] },
+    "EXP+MEN": { "name": "The Healer", "riasec": "IS", "careerFamilies": ["Healthcare Practitioners & Technical (diagnosing/treating)", "Community & Social Service (clinical and counseling)", "Educational Instruction (science, health, postsecondary)"] },
+    "EXP+PIO": { "name": "The Strategist", "riasec": "IE", "careerFamilies": ["Business & Financial Operations (analysis and strategy)", "Management (technology, science, systems)", "Legal"] },
+    "EXP+GRD": { "name": "The Analyst", "riasec": "IC", "careerFamilies": ["Computer & Mathematical", "Business & Financial Operations (quantitative)", "Healthcare Practitioners & Technical (laboratory/diagnostic sciences)"] },
+    "VIS+MEN": { "name": "The Inspirer", "riasec": "AS", "careerFamilies": ["Educational Instruction & Library (arts, language, enrichment teaching)", "Community & Social Service (expressive/developmental programs)", "Arts, Design, Entertainment & Media (communication for human impact)"] },
+    "VIS+PIO": { "name": "The Creative Director", "riasec": "AE", "careerFamilies": ["Arts, Design, Entertainment & Media (direction and production)", "Management (advertising, marketing, brand)", "Sales & Related (creative and client-facing services)"] },
+    "VIS+GRD": { "name": "The Curator", "riasec": "AC", "careerFamilies": ["Arts, Design, Entertainment & Media (editing and production craft)", "Educational Instruction & Library (archives, collections, curation)", "Business & Communication Support (technical writing, documentation)"] },
+    "MEN+PIO": { "name": "The Motivator", "riasec": "SE", "careerFamilies": ["Management (people-centered: HR, education, health, community)", "Business & Financial Operations (training, development, HR)", "Community & Social Service (program leadership and advocacy)"] },
+    "MEN+GRD": { "name": "The Anchor", "riasec": "SC", "careerFamilies": ["Healthcare Support (clinical assisting and coordination)", "Educational Instruction & Library (instructional support)", "Office & Administrative Support (people-facing coordination)"] },
+    "PIO+GRD": { "name": "The Executive", "riasec": "EC", "careerFamilies": ["Management (general, financial, administrative)", "Sales & Related (structured, high-professionalism sales)", "Business & Financial Operations (finance, purchasing, operations)"] }
+  }
+}
