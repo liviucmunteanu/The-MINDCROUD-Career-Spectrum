@@ -1,6 +1,6 @@
 {
   "instrument": "The MINDCROUD Career Spectrum",
-  "version": "1.0",
+  "version": "1.1",
   "responseCoding": {
     "positive": { "1": 1, "2": 2, "3": 3, "4": 4, "5": 5 },
     "reverse": { "1": 5, "2": 4, "3": 3, "4": 2, "5": 1 },
@@ -15,16 +15,52 @@
     "PIO": [5, 12, 18, 24, 30, 37, 44, 51, 58, 64],
     "GRD": [3, 10, 16, 22, 29, 36, 43, 50, 57, 63]
   },
+  "canonicalAvatarOrder": ["MAK", "EXP", "VIS", "MEN", "PIO", "GRD"],
   "rawScoreRange": { "min": 10, "max": 50 },
   "spectrumScore": {
-    "formula": "round(((raw - 10) / 40) * 100)",
-    "rounding": "half-up",
-    "range": { "min": 0, "max": 100 }
+    "formula": "spectrum = floor(((raw - 10) * 5 + 1) / 2)",
+    "equivalentTo": "((raw - 10) / 40) * 100 rounded half-up",
+    "rounding": "half-up via EXACT INTEGER ARITHMETIC (mandatory). IEEE-float round() and floor(x+0.5) are non-conforming: raw 33 yields 57 instead of the correct 58 in double precision, and banker's rounding mis-rounds every .5 boundary. Verified defect class in the v1.0 audit.",
+    "range": { "min": 0, "max": 100 },
+    "latticeNote": "Attainable spectrum values step by 2.5 raw-point equivalents (…, 50, 53, 55, 58, 60, …); a score2-score3 gap of exactly 11 is mathematically unreachable, so the <=10 third-dominant rule operationally brackets 10 (include) vs 12 (exclude)."
+  },
+  "facetScores": {
+    "compute": "Per scale, mean coded value of ACT, ENV, and NRG items separately (facet assignment in items.json).",
+    "interestEnergyDivergence": {
+      "rule": "Flag any scale where |mean(NRG coded) - mean(ACT coded)| >= 1.5",
+      "meaning": "Possible state confound (burnout, illness, mood) suppressing or inflating the energy facet independent of interest. Report note + retest advice; do not silently deliver the scale score as pure interest.",
+      "evidence": "v1.0 audit personas P75, P88 (illness manufactured false differentiation)"
+    }
   },
   "dominantAvatarRule": {
-    "alwaysDominant": "top 2 ranked Spectrum Scores",
-    "thirdDominantIf": "score2 - score3 <= 10",
-    "maxDominant": 3
+    "rank1": "always Dominant",
+    "rank2": "Dominant if its Spectrum Score >= 40; otherwise report a Solo Peak profile (single-avatar narrative, no combination card, exploration guidance)",
+    "rank3": "also Dominant if (score2 - score3 <= 10) AND (score3 >= 50)",
+    "soloPeakFlag": "if score1 - score2 >= 25, lead the report with the rank-1 narrative; present the combination as secondary",
+    "maxDominant": 3,
+    "tieBreak": {
+      "order": [
+        "1. higher raw scale score (pre-transformation)",
+        "2. higher ACT-facet sum (activity preference is the most interest-central facet)",
+        "3. if still tied at a pair-defining or third-slot boundary: present BOTH candidate readings explicitly as 'twin readings' — never silently pick one"
+      ],
+      "note": "v1.0 had no tie rules; ties were resolved by implementation sort order and occurred in ~30% of simulated realistic profiles (audit Batches C, D, F, K, L)."
+    },
+    "combinationLookup": "Normalize the dominant pair to canonicalAvatarOrder before lookup. v1.0 tool bug: alphabetical sort broke the lookup for 7 of 15 pairs."
+  },
+  "resultPrecedence": [
+    "1. VALIDITY: verdict 'Potentially invalid' -> suppress Dominant Avatars, combination, and career families entirely; deliver only the validity explanation and re-take/consultant-review guidance.",
+    "2. FLAT PROFILE: Differentiation Index < 15 (on a valid protocol) -> deliver the breadth narrative (Section 6.6 flat-profile language); do NOT deliver a combination profile.",
+    "3. LOW ELEVATION: top Spectrum Score < 50 -> deliver combination as tentative with exploration-first guidance.",
+    "4. NORMAL: deliver combination profile per dominantAvatarRule."
+  ],
+  "confidence": {
+    "basis": "margin = score2 - score3 (for the third-slot decision) and score1 - score2 (for pair ordering); projected SEM ~= 5 spectrum points",
+    "bands": [
+      { "minMargin": 15, "label": "High" },
+      { "minMargin": 8, "maxMargin": 14, "label": "Moderate" },
+      { "maxMargin": 7, "label": "Low", "reportLanguage": "adjacent Avatars are statistically interchangeable — explore both readings" }
+    ]
   },
   "differentiationIndex": {
     "formula": "max(spectrumScores) - min(spectrumScores)",
@@ -32,7 +68,8 @@
       { "min": 30, "label": "Well-differentiated" },
       { "min": 15, "max": 29, "label": "Moderately differentiated" },
       { "max": 14, "label": "Flat profile (flag)", "flag": "flat-profile" }
-    ]
+    ],
+    "caveat": "DI measures range, not top-of-profile separation; a single low scale can certify a weak profile as well-differentiated. Consultants should also inspect score1 - score3."
   },
   "scoreBands": [
     { "min": 81, "max": 100, "label": "Core Resonance" },
@@ -47,26 +84,41 @@
       { "q": 33, "correctResponse": 1 },
       { "q": 49, "correctResponse": 3 }
     ],
-    "attentionRule": { "0": "pass", "1": "caution", "2+": "potentially-invalid" },
     "consistencyPairs": [
       { "pair": "A", "items": [1, 41] },
       { "pair": "B", "items": [10, 56] }
     ],
-    "consistencyRule": {
-      "consistent": "absolute difference 0-1 on a pair",
-      "mild": "absolute difference 2 on a pair",
-      "strong": "absolute difference 3-4 on a pair",
-      "invalidIf": "any pair difference >= 3, OR both pairs difference >= 2"
-    },
-    "recommendedAutomatedScreens": {
-      "minCompletionSeconds": 180,
-      "longStringFlag": 12
+    "signals": {
+      "invalidLevel": [
+        "attention failures >= 2",
+        "any consistency pair |difference| >= 3",
+        "both consistency pairs |difference| >= 2"
+      ],
+      "cautionLevel": [
+        "attention failures == 1",
+        "long-string: max identical consecutive run >= 12 OR modal response >= 80% of all 65 responses",
+        "completion time < 180 seconds",
+        "acquiescence: mean RAW response across the 60 scored items >= 4.3",
+        "elevation: all six Spectrum Scores >= 70 AND Differentiation Index < 20",
+        "intra-scale coherence: on >= 3 scales, |mean(positively keyed coded) - mean(reverse keyed coded)| >= 2 (possible misreading of reversed statements)"
+      ],
+      "noteOnly": [
+        "single consistency pair |difference| == 2 (explicit v1.1 ruling: a lone mild pair is a NOTE, not a caution — v1.0 left this undefined and it flipped verdicts, audit personas P66/P69)",
+        "extreme response style: endpoints (1 or 5) >= 85% of responses (style annotation, never a validity signal — v1.0's Q17 'Agree' target false-flagged legitimate extreme responders)",
+        "flat profile (handled by resultPrecedence, not by the validity verdict)"
+      ]
     },
     "verdicts": {
-      "valid": "no flags",
+      "valid": "no invalid-level and no caution-level signals",
       "interpretWithCaution": "exactly one caution-level signal",
-      "potentiallyInvalid": "any invalid-level signal, or two or more caution-level signals"
-    }
+      "potentiallyInvalid": "any invalid-level signal, OR two or more caution-level signals"
+    },
+    "suppressionRule": "'Potentially invalid' MUST suppress dominant/combination output in the data layer, not only in report prose (v1.0 audit: an every-flag protocol was still named 'The Creative Director').",
+    "documentedLimitations": [
+      "The battery detects INATTENTION and response-style anomalies. It does NOT detect motivated distortion: targeted single-scale faking is undetectable by design (audit P76) — one reason selection/hiring use is prohibited.",
+      "Attention checks and consistency pairs are non-redundant (each catches failure classes the other misses; audit P72 vs P73) — both are mandatory.",
+      "Q1-Q20 contains no reverse-keyed item, so long-string screening is structurally weaker in the first third; v1.2 item pool should interleave earlier reversals."
+    ]
   },
   "combinations": {
     "MAK+EXP": { "name": "The Diagnostician", "riasec": "RI", "careerFamilies": ["Architecture & Engineering (incl. engineering technology)", "Installation, Maintenance & Repair (diagnostic trades)", "Life, Physical & Science Technician roles"] },

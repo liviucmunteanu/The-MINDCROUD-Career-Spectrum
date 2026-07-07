@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Instrument name** | The MINDCROUD Career Spectrum |
-| **Version** | 1.0 (English master version) |
+| **Version** | 1.1 (English master version) — post-audit revision; see Changelog |
 | **Instrument type** | Vocational interest / vocational personality inventory |
 | **Stakes** | Medium — career guidance, coaching, and development (not selection or hiring) |
 | **Scored items** | 60 (10 per Career Avatar scale) |
@@ -13,7 +13,7 @@
 | **Response format** | 5-point Likert agreement scale |
 | **Output** | Six Spectrum Scores (0–100), Spectrum Heatmap, 2–3 Dominant Avatars, Differentiation Index, validity flags |
 | **Target reliability** | Cronbach's alpha ≥ .80 per scale |
-| **Validation status** | Newly generated; not yet empirically validated (see Section 10) |
+| **Validation status** | Not yet empirically validated (see Section 10). A full simulated psychometric audit (8-stage, 120-persona protocol) was completed 2026-07-07; v1.1 implements its critical fixes. See `validation/mindcroud-career-spectrum-psychometric-audit.md`. |
 
 ---
 
@@ -138,6 +138,8 @@ Every item in the final form satisfies all of the following:
 > - **Do not think about salary, status, or job openings.** Answer only about what you would enjoy.
 > - **Go with your first honest reaction.** Most people finish in 10 to 15 minutes.
 > - **Answer every statement.** If you are unsure, choose the answer that is closest to how you feel most of the time.
+> - **A few statements are quality checks** that ask you to select a specific answer. They simply confirm that the statements are being read — just follow their instruction.
+> - **If you are a student or not currently working,** answer about the kinds of work and activities you would enjoy, based on school, projects, hobbies, or any experience you have.
 >
 > Your answers are confidential and will be used only to prepare your personal Career Spectrum report. When you are ready, begin.
 
@@ -173,59 +175,59 @@ Every item in the final form satisfies all of the following:
 10. I like checking details to make sure everything is correct.
 11. I like finding new ways to express an idea.
 12. I like taking the lead when a group needs direction.
-13. I enjoy reading about science, technology, or new discoveries.
+13. I enjoy exploring new ideas and discoveries in any subject.
 14. I enjoy building things I can touch when they are finished.
 15. Seeing a person grow because of my support makes my work feel meaningful.
 16. I work best when I have a clear plan and a fixed schedule.
-17. To show that you are reading each statement, please choose "Agree" for this one.
-18. Competition brings out my best effort.
+17. To show that you are reading each statement, select answer 4 ('Agree') here.
+18. Working toward a clear goal against a challenge brings out my best effort.
 19. I do my best work in places with freedom and few fixed rules.
 20. I feel comfortable in a workshop, on a work site, or outdoors.
-21. I do my best work when I am alone for most of the day.
+21. I prefer work where I am not responsible for anyone else's progress.
 22. Completing a task exactly as planned gives me satisfaction.
 23. I like work settings where careful analysis matters more than speed.
-24. I prefer to follow a leader rather than be the leader.
+24. I am more comfortable supporting a plan than deciding it.
 25. Making something beautiful gives me energy.
 26. I like jobs where I can see the physical results of my work at the end of the day.
 27. I prefer workplaces where people cooperate closely.
-28. I lose interest when a task requires long, detailed analysis.
+28. Digging into the details of a problem does not appeal to me.
 29. I enjoy jobs where every day is different and unplanned.
 30. I enjoy work environments where things move quickly.
 31. I prefer tasks with one correct answer over tasks with many possible answers.
 32. Working with physical materials gives me energy.
-33. For this statement, please select "Strongly disagree."
-34. I enjoy listening carefully when someone shares a personal difficulty.
+33. For this statement, select answer 1 ('Strongly disagree').
+34. I enjoy giving my full attention when someone shares a personal difficulty.
 35. Understanding how something truly works gives me deep satisfaction.
 36. I enjoy keeping records accurate and up to date.
 37. I like being the person who starts a new project.
 38. I enjoy imagining things that do not exist yet.
-39. I would rather work with ideas than with physical objects.
-40. Conversations with people give me energy.
+39. Working with physical objects appeals to me less than other kinds of work.
+40. Helping another person with a problem gives me energy.
 41. I like showing another person how to do something new.
 42. I keep asking questions until I fully understand a topic.
 43. I would rather improvise than follow a step-by-step plan.
 44. Trying to persuade people drains my energy.
-45. I work best when every step of my work is decided in advance.
+45. I prefer work where nothing is left open to my imagination.
 46. I feel proud when I fix something that was not working.
 47. I like roles where my main task is to support other people's growth.
 48. I feel energized when I face a complicated problem.
-49. This is a quality check. Please choose "Neutral" for this statement.
+49. This is a quality check. Select the middle answer, 3 ('Neutral').
 50. I prefer a stable job with clear duties over a job that changes all the time.
-51. Winning an important agreement gives me a strong feeling of excitement.
+51. Winning support for my idea after working hard for it excites me.
 52. I am drawn to work where personal style and taste matter.
-53. A full day of physical, hands-on work leaves me feeling drained.
+53. Spending the whole day working with my hands would not suit me.
 54. A full day of helping people with personal problems would exhaust me.
 55. I prefer a quick practical answer over a deep investigation.
 56. I enjoy reviewing work carefully to find small errors.
 57. Clear rules and procedures help me feel confident at work.
-58. I prefer a calm, predictable role over a competitive one.
+58. I avoid situations where my results are compared with others' results.
 59. I feel full of energy when I am inventing something new.
 60. I enjoy taking devices apart to learn how they work.
 61. I enjoy explaining difficult things in a way others can understand.
 62. I like work that lets me spend a long time investigating a single question.
-63. Careful, detailed paperwork quickly drains my energy.
+63. Keeping detailed records all day would drain my energy.
 64. I would enjoy being responsible for the success of a business or a team.
-65. Work that asks me to create something from nothing drains my energy.
+65. Work that depends on my imagination tires me out.
 
 *End of form. Thank the respondent and confirm submission.*
 
@@ -376,22 +378,38 @@ For each Avatar, sum the coded values of its 10 items (after reverse scoring whe
 
 Convert each raw scale score to a 0–100 **Spectrum Score**:
 
-> **Spectrum Score = ((raw score − 10) / 40) × 100**, rounded to the nearest whole number.
+> **Spectrum Score = ((raw score − 10) / 40) × 100**, rounded half-up to the nearest whole number.
 
-Worked examples: raw 10 → 0; raw 22 → 30; raw 30 → 50; raw 41 → 78 (77.5 rounds to 78); raw 50 → 100.
+Worked examples: raw 10 → 0; raw 22 → 30; raw 30 → 50; raw 33 → 58 (57.5 rounds up); raw 41 → 78 (77.5 rounds up); raw 50 → 100.
 
-*Rounding rule:* round half up (e.g., 77.5 → 78). Report Spectrum Scores as whole numbers only.
+*Implementation rule (mandatory, v1.1):* compute with **exact integer arithmetic** — `spectrum = floor(((raw − 10) × 5 + 1) / 2)`. Floating-point `round()` functions are non-conforming: IEEE doubles represent 57.5 as 57.4999…, and "banker's rounding" rounds .5 values to even — both were shown in the v1.0 audit to produce 1-point errors that sit directly on the dominance boundaries. Report Spectrum Scores as whole numbers only.
 
-### 6.5 Dominant Avatar rule
+*Score lattice note:* attainable Spectrum Scores step in 2.5-point raw equivalents, so a gap of exactly 11 points between two scores is mathematically unreachable; the ≤ 10 rule in 6.5 operationally brackets 10 (include) versus 12 (exclude).
+
+### 6.5 Dominant Avatar rule (revised v1.1)
 
 1. Rank the six Spectrum Scores from highest (rank 1) to lowest (rank 6).
-2. The **top 2** Avatars are always Dominant.
-3. The **third-ranked** Avatar is also Dominant if its Spectrum Score is within **10 points** of the second-ranked score (i.e., Score₂ − Score₃ ≤ 10).
-4. This yields **2 or 3 Dominant Avatars** per person. The fourth-ranked Avatar is never Dominant, regardless of gaps.
+2. The **rank-1** Avatar is always Dominant.
+3. The **rank-2** Avatar is Dominant **only if its Spectrum Score is ≥ 40**. If Score₂ < 40, report a **Solo Peak profile**: deliver the rank-1 Avatar narrative alone, present no combination profile, and route the client to exploration-first guidance. (v1.0 defect: pure-single-interest profiles received phantom co-dominant Avatars scored as low as 0, and a blend label whose second half was noise.)
+4. The **third-ranked** Avatar is also Dominant if **both** conditions hold: Score₂ − Score₃ ≤ 10 **and** Score₃ ≥ 50. (The elevation gate stops the window from promoting midpoint noise in compressed or adolescent profiles.)
+5. This yields **1, 2, or 3 Dominant Avatars** per person. The fourth-ranked Avatar is never Dominant, regardless of gaps.
+6. **Solo-peak emphasis flag:** if Score₁ − Score₂ ≥ 25, lead the report with the rank-1 narrative and present the combination as secondary.
 
-**Tie-breaking.** If two Avatars tie exactly at a rank boundary:
-- A tie for rank 1 or rank 2: both are Dominant (they occupy ranks 1 and 2).
-- A tie for rank 3 that qualifies under the 10-point rule would create 4 Dominant Avatars; in that case report the top 2 as Dominant and present both tied third Avatars as "shared third strand," instructing the consultant to resolve the third slot in conversation with the client (which of the two feels more like a chosen preference and which more like a learned skill).
+**Tie-breaking (deterministic cascade, v1.1).** Whenever two or more Avatars tie at any rank boundary that affects the Dominant set or the primary pair, resolve in this order:
+1. Higher **raw scale score** (before transformation).
+2. Higher **ACT-facet sum** (activity preferences are the most interest-central facet).
+3. If still tied at a pair-defining or third-slot boundary, present **both candidate readings explicitly as "twin readings"** — the report shows both combination profiles and the consultant resolves the emphasis in conversation. Never let implementation sort order silently pick one (v1.0 audit: exact ties occurred in roughly 30% of realistic simulated profiles, and the reported archetype depended on JSON key order).
+4. A tie for rank 3 that qualifies under rule 4 is presented as a "shared third strand" exactly as before: top 2 Dominant, both tied thirds named, consultant resolves in conversation.
+
+**Combination lookup rule:** before looking up the pair in Section 8.2 or `scoring.json`, normalize it to canonical Avatar order **MAK, EXP, VIS, MEN, PIO, GRD**. (v1.0 tooling defect: alphabetical ordering broke the lookup for 7 of the 15 pairs.)
+
+**Result precedence (hard rule, v1.1).** Outputs are gated in this order:
+1. **Validity:** a *Potentially invalid* verdict suppresses Dominant Avatars, the combination profile, and career families entirely — in the data layer, not merely in report prose.
+2. **Flat profile** (Differentiation Index < 15 on a valid protocol): deliver the flat-profile breadth narrative (6.6); do **not** deliver a combination profile.
+3. **Low elevation** (Score₁ < 50): deliver the combination as tentative, with exploration-first framing.
+4. Otherwise deliver the combination profile normally.
+
+**Classification confidence (report with every profile).** Margin = Score₂ − Score₃ (for the third slot) and Score₁ − Score₂ (for pair order): margin ≥ 15 = High; 8–14 = Moderate; ≤ 7 = Low ("adjacent Avatars are statistically interchangeable — explore both readings").
 
 ### 6.6 Differentiation Index
 
@@ -406,6 +424,10 @@ Worked examples: raw 10 → 0; raw 22 → 30; raw 30 → 50; raw 41 → 78 (77.5
 **Flat-profile guidance (report language):** "Your scores are close together across all six Avatars. This usually means one of three things: your interests are still forming, you have genuinely broad interests, or it was hard to choose between the answer options. A flat profile is not a problem — it is a signal that you may benefit from deeper exploration (trying activities, structured experiments, or a guided interview with a consultant) before committing to a single career direction."
 
 Consultants should treat a flat profile as an invitation to use card sorts, work-history interviews, or short real-world experiments rather than leaning on the ranked scores.
+
+**Precedence (v1.1):** on a valid protocol, a flat profile **replaces** the combination profile — the report delivers the breadth narrative above instead of a Dominant-pair archetype (see 6.5, Result precedence). A flat profile is an interpretive gate, **not** a validity signal: it fires identically on disengagement, mood suppression, and genuinely broad interests, so its meaning must be established in debrief, not asserted by the engine.
+
+**DI caveat:** the index measures range, not top-of-profile separation — one low scale can certify an otherwise compressed profile as "well-differentiated." Consultants should also inspect Score₁ − Score₃ before treating a profile as sharply directed.
 
 ### 6.7 Validity indicators
 
@@ -433,15 +455,27 @@ Both members of each pair are positively phrased; compute the absolute differenc
 
 Scoring rule:
 - Difference of **0–1** on a pair: consistent.
-- Difference of **2** on a pair: mild inconsistency.
-- Difference of **3–4** on a pair: strong inconsistency.
-- **Flag the profile as potentially invalid if:** either pair shows a difference of 3 or more, **or** both pairs show differences of 2 or more.
+- Difference of **2** on a pair: mild inconsistency. **A single mild pair is a NOTE only — it never counts toward the verdict** (explicit v1.1 ruling; v1.0 left this weight undefined and it alone flipped simulated profiles between "usable" and "discarded").
+- Difference of **3–4** on a pair: strong inconsistency (invalid-level signal).
+- **Invalid-level if:** either pair shows a difference of 3 or more, **or** both pairs show differences of 2 or more.
 
-**C. Additional automated screens (recommended for online administration).**
+**C. Automated screens (required for online administration, v1.1).**
 
-- **Completion time:** flag total completion under 3 minutes (implausibly fast for 65 items).
-- **Long-string responding:** flag 12 or more identical consecutive responses.
-- **Combined validity verdict:** a profile is reported as *Valid*, *Interpret with caution* (one caution-level signal), or *Potentially invalid* (any invalid-level signal, or two or more caution-level signals). Potentially invalid profiles require consultant review or re-administration; the automated report must clearly state that results may not reflect the respondent's true preferences.
+All indices below are computed from the existing 65 responses at zero respondent cost.
+
+| Screen | Rule | Level |
+|---|---|---|
+| Completion time | total < 180 seconds | Caution |
+| Long-string | ≥ 12 identical consecutive responses **or** modal response ≥ 80% of all items | Caution |
+| Acquiescence index | mean **raw** response across the 60 scored items ≥ 4.3 | Caution ("agreement style") |
+| Elevation index | all six Spectrum Scores ≥ 70 **and** DI < 20 | Caution ("uniformly high") |
+| Intra-scale coherence | on ≥ 3 scales, \|mean(positively keyed coded) − mean(reverse-keyed coded)\| ≥ 2 | Caution ("possible misreading of reversed statements") |
+| Extreme response style | endpoints (1 or 5) ≥ 85% of responses | Style note only — never a validity signal |
+| Interest–energy divergence | any scale with \|mean(NRG coded) − mean(ACT coded)\| ≥ 1.5 | Report note: possible state effect (burnout, illness, mood); advise retest when circumstances change |
+
+- **Combined validity verdict:** *Valid* (no signals) · *Interpret with caution* (exactly one caution-level signal) · *Potentially invalid* (any invalid-level signal, or two or more caution-level signals). Potentially invalid profiles require consultant review or re-administration, and the engine **must suppress** Dominant Avatars, combination, and career families (see 6.5, Result precedence) — v1.0 permitted an every-flag protocol to still receive a named career archetype.
+- **Documented limitation (include in the manual and consultant training):** this battery detects **inattention and response-style anomalies, not motivated distortion**. Targeted inflation of a single scale by a determined respondent is undetectable by design — one more reason the instrument is prohibited for selection or hiring.
+- **Non-redundancy note:** attention checks and consistency pairs each catch failure classes the other misses (mid-form scale flips pass all attention checks; periodic random patterns pass both consistency pairs). Both mechanisms are mandatory in every administration.
 
 ### 6.8 Worked scoring example
 
@@ -883,6 +917,42 @@ Until the roadmap in Section 10 is complete, every report must include:
 - Savickas, M. L., Taber, B. J., & Spokane, A. R. (2002). Convergent and discriminant validity of five interest inventories. *Journal of Vocational Behavior, 61*, 139–184.
 - Tracey, T. J. G., & Rounds, J. (1993). Evaluating Holland's and Gati's vocational-interest models: A structural meta-analysis. *Psychological Bulletin, 113*, 229–246.
 - Van Iddekinge, C. H., Roth, P. L., Putka, D. J., & Lanivich, S. E. (2011). Are you interested? A meta-analysis of relations between vocational interests and employee performance and turnover. *Journal of Applied Psychology, 96*, 1167–1194.
+
+---
+
+## Changelog
+
+### Version 1.1 (2026-07-07) — post-audit revision
+
+Implements the critical fixes from the simulated psychometric audit (8-stage / 120-persona protocol; see `validation/mindcroud-career-spectrum-psychometric-audit.md`, evidence in `validation/evidence/`).
+
+**Items (17 revised, same codes/keying/facets):**
+- Attention checks Q17, Q33, Q49 reworded to be dual-coded (number + anchor name) so they work even when a delivery surface under-displays anchors.
+- Q21, Q40 (Mentor): replaced introversion/extraversion proxies with helping-domain content.
+- Q45 (Visionary), Q58 (Pioneer): de-mirrored from Guardian structure items (engineered A–C bipolarity removed at the worst two points).
+- Q28, Q63: attention-/dyslexia-confounded wording replaced with interest-framed wording.
+- Q24, Q18: cultural-valence (leader deference, competition) wording neutralized.
+- Q53 (stamina confound), Q39 (idea-content import), Q65 (direct antonym of Q59 + borderline idiom), Q13 (STEM/reading channel), Q34 (hearing-assumptive + reading level), Q51 (commercial referent opacity) rewritten.
+- Q19, Q29, Q31, Q43, Q50 unchanged but flagged in `items.json` for pilot item analysis (structure-axis / SES confounds).
+
+**Scoring algorithm:**
+- Exact integer arithmetic mandated for the Spectrum transformation (float rounding produced 1-point boundary errors).
+- Dominance gates added: rank-2 floor (≥ 40, else Solo Peak profile), third-slot elevation gate (≥ 50), solo-peak emphasis flag (gap ≥ 25).
+- Deterministic tie-break cascade (raw score → ACT facet → explicit twin readings); canonical pair-key ordering for combination lookup (v1.0 tool silently failed 7/15 pairs).
+- Hard result precedence: invalid → suppress everything; flat → breadth narrative, no combination; low elevation → tentative combination.
+- Classification confidence bands added (margin-based).
+
+**Validity system:**
+- Single mild consistency difference (=2) explicitly ruled a note, not a caution.
+- New computed indices: acquiescence, elevation, intra-scale coherence, modal-proportion long-string, extreme-style note, interest–energy divergence (state-confound safeguard).
+- Suppression of invalid profiles moved into the data layer.
+- Documented limitation added: the battery detects inattention, not motivated distortion.
+
+**Administration:**
+- Respondent instructions now announce the quality-check items and include a student-context instruction.
+- Delivery rule: every response option must display its number **and** verbal anchor; inputs must be keyboard- and screen-reader-accessible (v1.0 field defect: numeric-only buttons made instructed-response items unanswerable and blocked assistive technology).
+
+### Version 1.0 — initial release.
 
 ---
 

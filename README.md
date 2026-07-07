@@ -2,7 +2,9 @@
 
 A complete, professional, commercially usable psychometric career assessment based on **Holland's RIASEC model** of vocational personality. The instrument helps adults (16+) identify their 2–3 dominant **Career Avatars** — the psychological career profiles where they have the highest probability of building a fulfilling and rewarding career.
 
-> **Status:** Version 1.0 — English master version. Newly generated and **not yet empirically validated**; see Section 10 (Validation Roadmap) of the master document before commercial use.
+> **Status:** Version 1.1 — English master version. **Not yet empirically validated**; see Section 10 (Validation Roadmap) of the master document before commercial use.
+>
+> v1.1 implements the critical fixes from a full simulated psychometric audit (8-stage / 120-persona protocol): 17 revised items, a deterministic gated classification algorithm, an expanded validity battery, and an accessible response UI. See [`validation/mindcroud-career-spectrum-psychometric-audit.md`](validation/mindcroud-career-spectrum-psychometric-audit.md) (evidence in [`validation/evidence/`](validation/evidence/)) and the Changelog at the end of the master document.
 
 ## The six Career Avatars
 
@@ -25,6 +27,8 @@ Respondents receive a **Spectrum Heatmap** — a 0–100 Spectrum Score on all s
 | [`data/items.json`](data/items.json) | Machine-readable item bank: all 65 administered items with position, internal code, Avatar, facet, keying, and quality-item metadata. |
 | [`data/scoring.json`](data/scoring.json) | Machine-readable scoring key: reverse-scored items, scale rosters, Spectrum Score formula, Dominant Avatar rule, Differentiation Index, score bands, validity rules, and the 15 combination mappings. |
 | [`tools/spectrum-scoring-tool.html`](tools/spectrum-scoring-tool.html) | **Self-contained interactive scoring tool** (no dependencies — open in any browser): administer the 65 items, then see the Spectrum Heatmap, Dominant Avatars, validity verdict, band narratives, and combination-based career recommendations. Includes demo-fill buttons for testing. |
+| [`validation/`](validation/) | The full psychometric audit report and the evidence files behind it (5 expert-stage analyses, 120 persona definitions, 12 batch simulation results). |
+| [`.claude/agents/spectrum-interpreter.md`](.claude/agents/spectrum-interpreter.md) | **Dedicated interpretation agent** for Claude Code: give it raw responses or Spectrum Scores and it validates the protocol, applies the v1.1 algorithm, and produces a consultant briefing and/or client-ready narrative report. |
 
 ## Instrument at a glance
 
